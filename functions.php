@@ -107,6 +107,9 @@
  * [INVESTIFY-206]
  * 27/01/2022 - <Added by Duke Ho>:
  *    - Add functions get_dynamic_copyright_year to get dynamic copyright message
+ * 
+ * 21/04/2022 - <Added by Ahmad Umar>:
+ *    - Add functions edit_account_company_code & save_edit_account_company_name to update and save user company name
  */
 
 /**
@@ -1402,3 +1405,48 @@ function print_adviser_report_disclaimer_content() {
 }
 
 add_shortcode( 'print_adviser_report_disclaimer_content', 'print_adviser_report_disclaimer_content' );
+
+/**
+ * Function name: edit_account_company_code
+ * Description: Edit company name when editing user details
+ * Created by: Ahmad Umar
+ * Created date: 21/04/2022
+ *
+ * @param $user
+ */
+function edit_account_company_code( $user ) {
+  $user_id = $user->ID ?? get_current_user_id();
+  $company_name = get_user_meta($user_id, 'company_name', true);
+  ?>
+  <p class="woocommerce-FormRow woocommerce-FormRow--wide form-row form-row-wide">
+    <label for="account_company_name"><?php
+      esc_html_e('Company Name', 'woocommerce'); ?></label>
+    <input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="account_company_name"
+           id="account_company_name" value="<?php
+    echo esc_attr($company_name ?: ''); ?>"/>
+  </p>
+  <?php
+}
+
+add_action('woocommerce_edit_account_form', 'edit_account_company_code', 10, 1);
+
+/**
+ * Function name: save_edit_account_company_name
+ * Description: Save company name after editing user details
+ * Created by: Ahmad Umar
+ * Created date: 21/04/2022
+ *
+ * @param $customer_id
+ */
+function save_edit_account_company_name( $customer_id ) {
+  if ( isset($_POST['account_company_name']) ) {
+    if ( !empty($_POST['account_company_name']) ) {
+      update_user_meta($customer_id, 'company_name', $_POST['account_company_name']);
+    }
+    else {
+      delete_user_meta($customer_id, 'company_name');
+    }
+  }
+}
+
+add_action('woocommerce_save_account_details', 'save_edit_account_company_name', 10, 1);
